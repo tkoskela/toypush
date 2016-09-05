@@ -7,6 +7,7 @@ program toypush
   use params
   use rk4, only: rk4_push
   use particle, only: particle_data
+  use particleIO, only: particleio_write
   
   implicit none  
   
@@ -74,6 +75,8 @@ contains
     prt%mu = 0.5D0 * protonmass
 
     err = rk4_init()
+
+    err = particleio_write(prt,'inistate.dat')
     
   end function init
   
@@ -87,6 +90,8 @@ contains
     type(particle_data) :: prt
     integer :: err
 
+    err = particleio_write(prt, 'endstate.dat')
+    
     err = particle_deallocate(prt)
     err = rk4_deallocate()
     
