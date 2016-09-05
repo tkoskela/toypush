@@ -42,7 +42,7 @@ contains
     ! get derivs with existing E-field
     err = e_interpol_0(y,efield)
     err = b_interpol_analytic(y,bfield,jacb)
-    err = eom_eval(y   ,efield,bfield,jacb,dt,dy ,prt%mu,prt%charge,prt%mass)
+    err = eom_eval(y   ,bfield,jacb,efield,dt,dy ,prt%mu,prt%charge,prt%mass)
 
     ytmp = y + hdt * dy
 #ifdef DEBUG
@@ -51,7 +51,7 @@ contains
 #endif
     err = e_interpol_0(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
-    err = eom_eval(ytmp,efield,bfield,jacb,dt,dyt,prt%mu,prt%charge,prt%mass)
+    err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
 
     ytmp = y + hdt * dyt
 #ifdef DEBUG
@@ -61,7 +61,7 @@ contains
 
     err = e_interpol_0(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
-    err = eom_eval(ytmp,efield,bfield,jacb,dt,dym,prt%mu,prt%charge,prt%mass)
+    err = eom_eval(ytmp,bfield,jacb,efield,dt,dym,prt%mu,prt%charge,prt%mass)
     
     ytmp = y + dt * dym
 #ifdef DEBUG
@@ -72,7 +72,7 @@ contains
 
     err = e_interpol_0(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
-    err = eom_eval(ytmp,efield,bfield,jacb,dt,dyt,prt%mu,prt%charge,prt%mass)
+    err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
     
     ! Obtain new_phase
     y2 = y + dt / 6.0D0 * ( dy + dyt + 2.0D0*dym )
