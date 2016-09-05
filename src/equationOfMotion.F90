@@ -69,13 +69,14 @@ contains
             + (jacb(3,1,iv) - jacb(1,3,iv)) * bvec(2,iv) &
             - (bvec(2,iv) * over_r + jacb(2,1,iv)) * bvec(3,iv) )))
 
-       Fr = evec(1,iv) + &
+       Fr = evec(1,iv) - &
             ( (mu(iv) + charge(iv) * cmrho2 * B) & ! murho2b
             * (bvec(1,iv) * jacb(1,1,iv) + bvec(2,iv) * jacb(2,1,iv) &
             + bvec(3,iv) * jacb(3,1,iv)) * over_B & ! dbdr
             ) 
        Fp = evec(2,iv) ! dbdphi is 0 by definition
-       Fz = ( (mu(iv) + charge(iv) * cmrho2 * B) & ! murho2b
+       Fz = evec(3,iv) - &
+            ( (mu(iv) + charge(iv) * cmrho2 * B) & ! murho2b
             * (bvec(1,iv) * jacb(1,3,iv) + bvec(2,iv) * jacb(2,3,iv) &
             + bvec(3,iv) * jacb(3,3,iv)) * over_B & ! dbdz
             )
