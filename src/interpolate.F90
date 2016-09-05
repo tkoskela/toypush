@@ -34,6 +34,36 @@ contains
     
   end function e_interpol_0
 
+  function e_interpol_tri(y,evec) result(err)
+
+    use grid_module
+
+    double precision, intent(in),  dimension(4,veclen) :: y    !> R,phi,z,rho_parallel
+    double precision, intent(out), dimension(3,veclen) :: evec !> Er,Ephi,Ez          
+    integer :: err
+
+    integer :: iv
+    double precision, dimension(3) :: bc_coords
+    double precision, dimension(2) :: dx
+    integer :: itri
+
+    itri = 1
+    err = 0
+    do iv = 1,veclen
+
+       dx(1) = y(1,iv) - grid_mapping(1,3,itri)
+       dx(2) = y(3,iv) - grid_mapping(2,3,itri)
+       bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
+       bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
+
+       evec(:,iv) = grid_efield(:,1) * bc_coords
+
+       write(*,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
+       
+    end do
+    
+  end function e_interpol_tri
+
   !> Dummy function that interpolates the magnetic field vector at a given set of (r,phi,z) coordinates
   !> Always returns 0
   !<

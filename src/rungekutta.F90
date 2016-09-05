@@ -19,7 +19,7 @@ contains
   function rk4_push(dt,prt) result(err)
 
     use eom, only : eom_eval
-    use interpolate, only : b_interpol_analytic, e_interpol_0
+    use interpolate, only : b_interpol_analytic, e_interpol_tri
     use particle, only : particle_data, particle_getphase, particle_updatephase
     
     implicit none
@@ -40,7 +40,7 @@ contains
 #endif
     
     ! get derivs with existing E-field
-    err = e_interpol_0(y,efield)
+    err = e_interpol_tri(y,efield)
     err = b_interpol_analytic(y,bfield,jacb)
     err = eom_eval(y   ,bfield,jacb,efield,dt,dy ,prt%mu,prt%charge,prt%mass)
 
@@ -49,7 +49,7 @@ contains
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
 #endif
-    err = e_interpol_0(ytmp,efield)
+    err = e_interpol_tri(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
 
@@ -59,7 +59,7 @@ contains
     if(err .eq. 1) stop
 #endif
 
-    err = e_interpol_0(ytmp,efield)
+    err = e_interpol_tri(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dym,prt%mu,prt%charge,prt%mass)
     
@@ -70,7 +70,7 @@ contains
 #endif
     dym = dyt + dym
 
-    err = e_interpol_0(ytmp,efield)
+    err = e_interpol_tri(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
     
