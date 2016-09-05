@@ -64,10 +64,10 @@ contains
        over_B  = 1.0D0 / B
        over_B2 = 1.0D0 / B2       
 
-       D = 1.0D0 / (1.0D0 + y(4,iv) * &
+       D = 1.0D0 / (1.0D0 + y(4,iv) * (&
             -1.D0 * over_B2 * ( jacb(2,3,iv) * bvec(1,iv) &
             + (jacb(3,1,iv) - jacb(1,3,iv)) * bvec(2,iv) &
-            - (bvec(2,iv) * over_r + jacb(2,1,iv)) * bvec(3,iv) ))
+            - (bvec(2,iv) * over_r + jacb(2,1,iv)) * bvec(3,iv) )))
 
        Fr = evec(1,iv) + &
             ( (mu(iv) + charge(iv) * cmrho2 * B) & ! murho2b
