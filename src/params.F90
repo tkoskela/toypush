@@ -25,8 +25,8 @@ module params
   double precision, parameter :: zmax = 1D0 
   integer, parameter :: veclen = 256
   integer, parameter :: nprt = 256
-  integer, parameter :: nt = 1000
-  double precision, parameter :: dt = 2.0D-7
+  integer, parameter :: nt = 10000
+  double precision, parameter :: dt = 2.0D-8
 
   
 end module params
