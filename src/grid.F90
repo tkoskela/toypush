@@ -83,9 +83,6 @@ contains
     grid_mapping(2,1,1) = - det * ( coords(2,1) - coords(2,3) )
     grid_mapping(2,2,1) =   det * ( coords(1,1) - coords(1,3) )
     grid_mapping(:,3,1) = coords(:,3)    
-
-    write(*,*) grid_mapping(1,:,1)
-    write(*,*) grid_mapping(2,:,1)
     
   end function grid_init_coords
 
