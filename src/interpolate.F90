@@ -45,10 +45,11 @@ contains
     integer :: iv
     double precision, dimension(3) :: bc_coords
     double precision, dimension(2) :: dx
-    integer :: itri
+    integer :: itri, inode, icomp
 
     itri = 1
     err = 0
+    evec = 0D0
     do iv = 1,veclen
 
        dx(1) = y(1,iv) - grid_mapping(1,3,itri)
@@ -56,9 +57,13 @@ contains
        bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
        bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
 
-       evec(:,iv) = grid_efield(:,1) * bc_coords
+       do inode = 1,3
+          do icomp = 1,3
+             evec(icomp,iv) = evec(icomp,iv) + grid_efield(icomp,inode) * bc_coords(inode)
+          end do
+       end do
 
-       write(*,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
+       !write(313,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
        
     end do
     
@@ -89,13 +94,14 @@ contains
   end function b_interpol_0
 
   !> Function that interpolates the magnetic field vector at a given set of (r,phi,z) coordinates
-  !> Returns values from an analytic function psi = (2-R)^2*(1-z)^2, Br = 1/r dpsi/dz, Bz = -1/r dpsi/dR
-  !> Input R should be within 0 and 2, input z should be within -1 and 1.
+  !> Returns values from an analytic function psi = (1-(2-R)^2)*(1-z^2),
+  !> Br = 1/r dpsi/dz, Bz = -1/r dpsi/dR
+  !> Input R should be within 1 and 3, input z should be within -1 and 1.
   !<
   function b_interpol_analytic(y,bvec,jacb) result(err)
 
-    double precision, parameter :: br0 = 1D-1
-    double precision, parameter :: bz0 = 1D-1
+    double precision, parameter :: br0 = 1D-2
+    double precision, parameter :: bz0 = 1D-2
     double precision, parameter :: bp0 = 1D0
     
     double precision, intent(in),  dimension(4,veclen) :: y    !> R,phi,z,rho_parallel
@@ -109,28 +115,31 @@ contains
     integer :: err
     integer :: iv
 
-    double precision :: over_r, over_r2
+    double precision :: over_r, over_r2, r, z
     
     err = 0
     do iv = 1,veclen
+       r = y(1,iv) - 2D0
+       z = y(3,iv)
+       
        over_r = 1.0D0 / y(1,iv)
        over_r2 = over_r / y(1,iv)
        
-       bvec(1,iv) = br0 * over_r * 2.0D0 * y(3,iv) * (1.0D0 - y(3,iv)) * (1 - y(1,iv)) ** 2
+       bvec(1,iv) = br0 * 2D0 * (r ** 2 - 1D0) * z
        bvec(2,iv) = bp0 * over_r
-       bvec(3,iv) = bz0 * 2.0D0 * (y(1,iv) - 2.0D0) * (1 - y(3,iv)) ** 2 ! r and 1/r cancel out
+       bvec(3,iv) = bz0 * 2D0 * (1D0 - z ** 2) * r
 
-       jacb(1,1,iv) = br0 * over_r2 * (y(1,iv) - 2D0) * (y(1,iv) + 2D0) * (y(3,iv) - 1D0) * y(3,iv)
+       jacb(1,1,iv) = br0 * 4D0 * r * z
        jacb(1,2,iv) = 0D0
-       jacb(1,3,iv) = br0 * over_r  * (2D0 - y(1,iv)**2) * (2D0 * y(3,iv) - 1)
+       jacb(1,3,iv) = br0 * 2D0 * (r ** 2 - 1D0)
 
        jacb(2,1,iv) = -1D0 * bp0 * over_r2
        jacb(2,2,iv) = 0D0
        jacb(2,3,iv) = 0D0
 
-       jacb(3,1,iv) = bz0 * (1D0 - y(3,iv)) ** 2
+       jacb(3,1,iv) = bz0 * 2D0 * (1D0 - z ** 2)
        jacb(3,2,iv) = 0D0
-       jacb(3,3,iv) = bz0 * 2D0 * (y(1,iv) - 2D0) * (y(3,iv) - 1D0)
+       jacb(3,3,iv) = -bz0 * 4D0 * r * z
     end do
 
   end function b_interpol_analytic
