@@ -29,6 +29,8 @@ program toypush
   
   !pid = 88
   !open(unit=15,file='orbit.dat',action='write')
+  
+  !$omp parallel do private(it)
   do it = 1,nt
      err = rk4_push(dt, prt)
 
