@@ -19,14 +19,14 @@ module params
   double precision, parameter :: epsilon0 = 8.8542D-12
 
   ! run control parameters
-  double precision, parameter :: rmin = 0D0
-  double precision, parameter :: rmax = 2D0
+  double precision, parameter :: rmin = 1D0
+  double precision, parameter :: rmax = 3D0
   double precision, parameter :: zmin = -1D0
   double precision, parameter :: zmax = 1D0 
   integer, parameter :: veclen = 256
   integer, parameter :: nprt = 256
-  integer, parameter :: nt = 10
-  double precision, parameter :: dt = 1.0D-6
+  integer, parameter :: nt = 1000
+  double precision, parameter :: dt = 2.0D-7
 
   
 end module params
