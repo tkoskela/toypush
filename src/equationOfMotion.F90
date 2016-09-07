@@ -50,6 +50,7 @@ contains
 
     err = 0
 
+    !$omp do private(iv,B,B2,c_m,cmrho,cmrho2,over_r,over_B,over_B2,D,Fr,Fp,Fz)
     do iv = 1,veclen
 
        ! Norms

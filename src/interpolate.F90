@@ -50,6 +50,7 @@ contains
     itri = 1
     err = 0
     evec = 0D0
+    !!$omp do private(iv,inode,icomp,bc_coords,dx)
     do iv = 1,veclen
 
        dx(1) = y(1,iv) - grid_mapping(1,3,itri)
@@ -118,6 +119,7 @@ contains
     double precision :: over_r, over_r2, r, z
     
     err = 0
+    !$omp do private(iv,r,z,over_r,over_r2)
     do iv = 1,veclen
        r = y(1,iv) - 2D0
        z = y(3,iv)

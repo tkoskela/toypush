@@ -8,6 +8,7 @@ program toypush
   use rk4, only: rk4_push
   use particle, only: particle_data
   use initmodule, only : init
+  use omp_lib
   
   implicit none  
   
@@ -18,9 +19,10 @@ program toypush
   integer :: pid
 
   write(*,*) 'program toypush started'
+  write(*,*) 'veclen = ',veclen
   write(*,*)
   
-  write(*,*) 'initializing particles'
+  write(*,*) 'initializing',nprt,'particles'  
   err = init(prt)
   write(*,*) 'done initialising'
   write(*,*)
@@ -30,7 +32,8 @@ program toypush
   !pid = 88
   !open(unit=15,file='orbit.dat',action='write')
   
-  !$omp parallel do private(it)
+  !$omp parallel private(it,err)
+  !write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
   do it = 1,nt
      err = rk4_push(dt, prt)
 
@@ -39,6 +42,7 @@ program toypush
         write(*,*) 'completed time step ',it,' out of ',nt
      end if
   end do
+  !$omp end parallel
   !close(15)
   write(*,*) 'done pushing'
   write(*,*)

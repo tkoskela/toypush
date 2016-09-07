@@ -1,7 +1,7 @@
 FC = gfortran
 OBJS = params.o grid.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
-FFLAGS = -g -ffpe-trap=zero,invalid,overflow,underflow -fno-backtrace
+FFLAGS = -g -fopenmp -ffpe-trap=zero,invalid,overflow,underflow -fno-backtrace
 
 DFLAGS = -DDEBUG
 
@@ -10,6 +10,9 @@ toypush : $(OBJS) toypush.o
 
 test_interpolate : $(OBJS) test_interpolate.o
 	$(FC) $(FFLAGS) $(DFLAGS) -o $@ $^
+
+etags :
+	etags *.F90
 
 %.o : %.F90
 	$(FC) $(FFLAGS) $(DFLAGS) -c $<
