@@ -1,4 +1,13 @@
-FC = gfortran
+ifeq ($(NERSC_HOST),edison)
+	FC = ftn
+else ifeq ($(NERSC_HOST),cori)
+	FC = ftn
+else ifeq ($(NERSC_HOST),carl)
+	FC = ifort
+else
+	FC = gfortran
+endif
+
 OBJS = params.o grid.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
 FFLAGS = -g -fopenmp
