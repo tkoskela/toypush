@@ -33,14 +33,18 @@ program toypush
   !open(unit=15,file='orbit.dat',action='write')
   
   !$omp parallel private(it,err)
-  !write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
+  !$omp master
+  write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
+  !$omp end master
   do it = 1,nt
      err = rk4_push(dt, prt)
 
      !write(15,*) prt%rpz(:,pid)
+     !$omp master
      if (mod(it,nt/10) .eq. 0) then
         write(*,*) 'completed time step ',it,' out of ',nt
      end if
+     !$omp end master
   end do
   !$omp end parallel
   !close(15)

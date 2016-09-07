@@ -30,6 +30,8 @@ contains
     double precision :: hdt
     integer :: err
 
+    integer :: iv,iy
+
     hdt = dt * 0.5D0
 
     err = particle_getPhase(prt,y,veclen)
@@ -44,7 +46,11 @@ contains
     err = b_interpol_analytic(y,bfield,jacb)
     err = eom_eval(y   ,bfield,jacb,efield,dt,dy ,prt%mu,prt%charge,prt%mass)
 
-    ytmp = y + hdt * dy
+    do iy = 1,4
+       do iv = 1,veclen
+          ytmp(iy,iv) = y(iy,iv) + hdt * dy(iy,iv)
+       end do
+    end do
 #ifdef DEBUG
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
@@ -53,7 +59,11 @@ contains
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
 
-    ytmp = y + hdt * dyt
+    do iy = 1,4
+       do iv = 1,veclen
+          ytmp(iy,iv) = y(iy,iv) + hdt * dyt(iy,iv)
+       end do
+    end do
 #ifdef DEBUG
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
@@ -63,19 +73,31 @@ contains
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dym,prt%mu,prt%charge,prt%mass)
     
-    ytmp = y + dt * dym
+    do iy = 1,4
+       do iv = 1,veclen
+          ytmp(iy,iv) = y(iy,iv) + dt * dym(iy,iv)
+       end do
+    end do
 #ifdef DEBUG
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
 #endif
-    dym = dyt + dym
+    do iy = 1,4
+       do iv = 1,veclen
+          dym(iy,iv) = dyt(iy,iv) + dym(iy,iv)
+       end do
+    end do
 
     err = e_interpol_tri(ytmp,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
     
     ! Obtain new_phase
-    y2 = y + dt / 6.0D0 * ( dy + dyt + 2.0D0*dym )
+    do iy = 1,4
+       do iv = 1,veclen
+          y2(iy,iv) = y(iy,iv) + dt / 6.0D0 * ( dy(iy,iv) + dyt(iy,iv) + 2.0D0*dym(iy,iv) )
+       end do
+    end do
 #ifdef DEBUG
     err = check_bounds(y2)
     if(err .eq. 1) stop

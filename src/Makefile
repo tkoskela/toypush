@@ -1,7 +1,7 @@
-FC = gfortran
+FC = ftn
 OBJS = params.o grid.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
-FFLAGS = -g -fopenmp -ffpe-trap=zero,invalid,overflow,underflow -fno-backtrace
+FFLAGS = -g -fopenmp
 
 DFLAGS = -DDEBUG
 
