@@ -1,4 +1,4 @@
-FC = ftn
+FC = gfortran
 OBJS = params.o grid.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
 FFLAGS = -g -fopenmp

@@ -25,48 +25,52 @@ contains
 
   !> Updates the phase variables rpz and rho_par of the particle
   !<
-  function particle_updatePhase(prt,newPhase,veclen) result(err)
+  function particle_updatePhase(prt,newPhase,veclen,iblock) result(err)
 
-    integer, intent(in) :: veclen
+    integer, intent(in) :: veclen !> block size
+    integer, intent(in) :: iblock !> block id  
     type(particle_data), intent(inout) :: prt
     double precision, dimension(4,veclen), intent(in) :: newPhase
 
     integer :: err
-    integer :: iv
+    integer :: iv,iglob
 
     err = 0
     
     do iv = 1,veclen
-       prt%rpz(:,iv) = newPhase(1:3,iv)
-       prt%rho_par(iv) = newPhase(4,iv)
+       iglob = (iblock - 1) * veclen + iv
+       prt%rpz(:,iglob)   = newPhase(1:3,iv)
+       prt%rho_par(iglob) = newPhase(4,iv)
     end do
     
   end function particle_updatePhase
 
   !> Returns the phase variables rpz and rho_par of the particle
   !<
-  function particle_getPhase(prt,phase,veclen) result(err)
+  function particle_getPhase(prt,phase,veclen,iblock) result(err)
 
-    integer, intent(in) :: veclen
+    integer, intent(in) :: veclen !> block size
+    integer, intent(in) :: iblock !> block id  
     type(particle_data), intent(in) :: prt
     double precision, dimension(4,veclen), intent(out) :: phase
 
     integer :: err
-    integer :: iv
+    integer :: iv, iglob
 
     err = 0
     
     do iv = 1,veclen
-       phase(1:3,iv) = prt%rpz(:,iv)
-       phase(4,iv)   = prt%rho_par(iv)
+       iglob = (iblock - 1) * veclen + iv
+       phase(1:3,iv) = prt%rpz(:,iglob)
+       phase(4,iv)   = prt%rho_par(iglob)
     end do
     
   end function particle_getPhase
   
-  function particle_init(prt,veclen) result(err)
+  function particle_init(prt,arraydim) result(err)
 
-    integer, intent(in) :: veclen
-    type(particle_data), intent(inout) :: prt
+    integer, intent(in) :: arraydim !> size of arrays
+    type(particle_data), intent(inout) :: prt !> particle data struct
     integer :: err
 
     if(prt%isallocated) then
@@ -74,11 +78,11 @@ contains
        return
     end if
 
-    allocate(prt%rpz(3,veclen))
-    allocate(prt%mass(veclen))
-    allocate(prt%charge(veclen))
-    allocate(prt%mu(veclen))
-    allocate(prt%rho_par(veclen))
+    allocate(prt%rpz(3,arraydim))
+    allocate(prt%mass(arraydim))
+    allocate(prt%charge(arraydim))
+    allocate(prt%mu(arraydim))
+    allocate(prt%rho_par(arraydim))
 
     prt%isAllocated = .true.
     err = 0

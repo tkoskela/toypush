@@ -47,7 +47,7 @@ contains
        end do
     end do
 
-    err = particle_updatePhase(prt,y,nprt)
+    err = particle_updatePhase(prt,y,nprt,1)
 
     prt%mass = 2.0D0 * protonmass
     prt%charge = unitcharge

@@ -16,7 +16,7 @@ module rk4
   
 contains
   
-  function rk4_push(dt,prt) result(err)
+  function rk4_push(prt, iblock) result(err)
 
     use eom, only : eom_eval
     use interpolate, only : b_interpol_analytic, e_interpol_tri
@@ -25,7 +25,7 @@ contains
     implicit none
 
     type(particle_data), intent(inout) :: prt
-    double precision, intent(in) :: dt
+    integer, intent(in) :: iblock
     
     double precision :: hdt
     integer :: err
@@ -34,7 +34,7 @@ contains
 
     hdt = dt * 0.5D0
 
-    err = particle_getPhase(prt,y,veclen)
+    err = particle_getPhase(prt,y,veclen,iblock)
 
 #ifdef DEBUG
     err = check_bounds(y)
@@ -103,7 +103,7 @@ contains
     if(err .eq. 1) stop
 #endif
 
-    err = particle_updatePhase(prt,y2,veclen)
+    err = particle_updatePhase(prt,y2,veclen,iblock)
     
   end function rk4_push
 

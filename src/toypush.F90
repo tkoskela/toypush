@@ -14,39 +14,46 @@ program toypush
   
   integer :: err
   type(particle_data) :: prt
-  integer :: it
-
+  integer :: it,iblock
+  integer :: nblock
+  
   integer :: pid
 
   write(*,*) 'program toypush started'
   write(*,*) 'veclen = ',veclen
   write(*,*)
+
+  !$omp parallel
+  !$omp master
+  write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
+  !$omp end master
+  !$omp end parallel
   
   write(*,*) 'initializing',nprt,'particles'  
   err = init(prt)
   write(*,*) 'done initialising'
   write(*,*)
   
-  write(*,*) 'pushing particles'
+  nblock = nprt / veclen  
+  write(*,*) 'pushing particles in ',nblock,' blocks'
   
   !pid = 88
   !open(unit=15,file='orbit.dat',action='write')
-  
-  !$omp parallel private(it,err)
-  !$omp master
-  write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
-  !$omp end master
-  do it = 1,nt
-     err = rk4_push(dt, prt)
 
-     !write(15,*) prt%rpz(:,pid)
-     !$omp master
-     if (mod(it,nt/10) .eq. 0) then
-        write(*,*) 'completed time step ',it,' out of ',nt
-     end if
-     !$omp end master
+  !$omp parallel do private(iblock, it)
+  do iblock = 1,nblock
+     
+     do it = 1,nt
+        err = rk4_push(prt, iblock)
+        
+        !write(15,*) prt%rpz(:,pid)
+        !$omp critical
+        if (mod(it,nt/10) .eq. 0) then
+           write(*,*) 'completed time step ',it,' out of ',nt,' in block ',iblock
+        end if
+        !$omp end critical
+     end do
   end do
-  !$omp end parallel
   !close(15)
   write(*,*) 'done pushing'
   write(*,*)
