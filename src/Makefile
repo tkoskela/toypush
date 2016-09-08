@@ -5,14 +5,14 @@ else ifeq ($(NERSC_HOST),cori)
 else ifeq ($(NERSC_HOST),carl)
 	FC = ifort
 else
-	FC = gfortran
+	FC = mpifort
 endif
 
 OBJS = params.o grid.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
-FFLAGS = -g -fopenmp
+FFLAGS = -g
 
-DFLAGS = -DDEBUG
+DFLAGS = -DDEBUG -DMPI
 
 toypush : $(OBJS) toypush.o
 	$(FC) $(FFLAGS) $(DFLAGS) -o $@ $^
