@@ -23,8 +23,8 @@ module params
   double precision, parameter :: rmax = 3D0
   double precision, parameter :: zmin = -1D0
   double precision, parameter :: zmax = 1D0 
-  integer, parameter :: veclen = 2**10
-  integer, parameter :: nprt = 2**12
+  integer, parameter :: veclen = 2**9
+  integer, parameter :: nprt = 2**14
   integer, parameter :: nt = 100
   double precision, parameter :: dt = 2.0D-8
 

@@ -27,9 +27,9 @@ program toypush
 
   integer :: num_procs, my_id
 
-  write(*,*) 'program toypush started'
-  write(*,*) 'veclen = ',veclen
-  write(*,*)
+  real :: t1,t2
+
+  my_id = 0
 
 #ifdef OPENMP
   !$omp parallel
@@ -42,24 +42,31 @@ program toypush
 #ifdef MPI
   call mpi_init(err)
   call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, err)
+  call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, err)
 #endif
+
+  if(my_id .eq. 0) write(*,*) 'program toypush started'
+  if(my_id .eq. 0) write(*,*) 'veclen = ',veclen
+  if(my_id .eq. 0) write(*,*)
   
-  write(*,*) 'initializing',nprt,'particles'  
+  if(my_id .eq. 0) write(*,*) 'initializing',nprt,'particles'  
   err = init(prt)
-  write(*,*) 'done initialising'
-  write(*,*)
+  if(my_id .eq. 0) write(*,*) 'done initialising'
+  if(my_id .eq. 0) write(*,*)
   
   nblock = nprt / veclen  
-  write(*,*) 'pushing particles in ',nblock,' blocks'
+  if(my_id .eq. 0) write(*,*) 'pushing particles in ',nblock,' blocks'
   
   !pid = 88
   !open(unit=15,file='orbit.dat',action='write')
+
+  call cpu_time(t1)
 
   !$omp parallel do private(iblock, it)
   do iblock = 1,nblock
 
 #ifdef MPI
-     if (mod(iblock,my_id) .eq. 0) then
+     if (mod(iblock,num_procs) .eq. my_id) then
 #endif
      
         do it = 1,nt
@@ -67,8 +74,8 @@ program toypush
            
            !write(15,*) prt%rpz(:,pid)
            !$omp critical
-           if (mod(it,nt/10) .eq. 0) then
-              write(*,*) 'completed time step ',it,' out of ',nt,' in block ',iblock
+           if (mod(it,nt/4) .eq. 0) then
+              if(my_id .eq. 0) write(*,*) 'completed time step ',it,' out of ',nt,' in block ',iblock
            end if
            !$omp end critical
 
@@ -78,18 +85,22 @@ program toypush
 #endif
   end do
   !close(15)
-  write(*,*) 'done pushing'
-  write(*,*)
+
+  call cpu_time(t2)
+
+  if(my_id .eq. 0) write(*,*) 'done pushing'
+  if(my_id .eq. 0) write(*,*) 'spent ',t2-t1,'s'
+  if(my_id .eq. 0) write(*,*)
 
   !call mpi_gatherv
   
-  write(*,*) 'finalizing'
+  if(my_id .eq. 0)  write(*,*) 'finalizing'
   err = finalize(prt)
   call mpi_finalize(err)
-  write(*,*) 'done finalizing'
-  write(*,*)
+  if(my_id .eq. 0) write(*,*) 'done finalizing'
+  if(my_id .eq. 0) write(*,*)
   
-  write(*,*) 'program toypush successfully completed!'
+  if(my_id .eq. 0) write(*,*) 'program toypush successfully completed!'
   
 contains
   
