@@ -96,7 +96,9 @@ program toypush
   
   if(my_id .eq. 0)  write(*,*) 'finalizing'
   err = finalize(prt)
+#ifdef MPI
   call mpi_finalize(err)
+#endif
   if(my_id .eq. 0) write(*,*) 'done finalizing'
   if(my_id .eq. 0) write(*,*)
   
