@@ -55,7 +55,7 @@ contains
        ! Norms
        B2 = dot_product(bvec(iv,:),bvec(iv,:))
 #ifdef EXPERIMENT
-       B  = B2
+       B  = sqrt(B2)
        
        c_m = charge(iv) * mass(iv)
        cmrho = c_m * y(iv,4)
