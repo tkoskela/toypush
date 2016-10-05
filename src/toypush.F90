@@ -72,13 +72,13 @@ program toypush
         do it = 1,nt
            err = rk4_push(prt, iblock)
            
-           !write(15,*) prt%rpz(:,pid)
+#ifdef VERBOSE
            !$omp critical
            if (mod(it,nt/4) .eq. 0) then
               if(my_id .eq. 0) write(*,*) 'completed time step ',it,' out of ',nt,' in block ',iblock
            end if
            !$omp end critical
-
+#endif
         end do
 #ifdef MPI
      end if
