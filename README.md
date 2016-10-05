@@ -3,6 +3,7 @@ Simple PIC particle push program. Initialises a group of 32 768 particles and pu
 
 # Build Instructions
 cd src
+
 make
 
 The Makefile detects the fortran mpi compiler on NERSC platforms Edison, Cori and Carl. On other platforms it tries to use mpifort by default. To use another compiler, edit the Makefile on line 11. Parallelisation by MPI is enabled by default. To use OpenMP, add -DOPENMP to DFLAGS. NOTE: scaling is poor with OpenMP, probably due to false sharing of grid data.
