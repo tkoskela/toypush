@@ -18,6 +18,7 @@ DFLAGS += -DVERBOSE
 DFLAGS += -DMPI
 #DFLAGS += -DDEBUG
 #DFLAGS += -DOPENMP
+#DFLAGS += -DEXPERIMENT
 
 toypush : $(OBJS_AOS) toypush.o
 	$(FC) $(FFLAGS) $(DFLAGS) -o $@ $^
