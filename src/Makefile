@@ -17,6 +17,7 @@ OBJS_AOS = params.o grid.o particle_aos.o particleIO_aos.o equationOfMotion_aos.
 DFLAGS += -DMPI
 #DFLAGS += -DDEBUG
 #DFLAGS += -DOPENMP
+#DFLAGS += -DEXPERIMENT
 
 toypush : $(OBJS_AOS) toypush.o
 	$(FC) $(FFLAGS) $(DFLAGS) -o $@ $^
