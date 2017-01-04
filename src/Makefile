@@ -1,4 +1,4 @@
-FFLAGS = -g -O3
+FFLAGS = -g -O3 -qopt-report=5 -qopt-report-phase=vec
 
 ifeq ($(NERSC_HOST),edison)
 	FC = ftn
