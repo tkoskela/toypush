@@ -22,6 +22,7 @@ contains
     use interpolate, only : b_interpol_analytic, e_interpol_tri
     use particle, only : particle_data, particle_getphase, particle_updatephase
     use search_module, only : search_tr_vec
+    use grid_module, only : grid_ntri
     
     implicit none
 
@@ -38,13 +39,20 @@ contains
 
     err = particle_getPhase(prt,y,veclen,iblock)
 
+#ifndef MULTIPLEELEMENTS
+    itri = 1
+#endif
+
 #ifdef DEBUG
     err = check_bounds(y)
     if(err .eq. 1) stop
 #endif
     
     ! get derivs with existing E-field
-    err = search_tr_vec(y([1,3],:),itri)
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(y,itri)
+#endif
+    if(any(itri .lt. 1) .or. any(itri.gt.grid_ntri)) stop
     err = e_interpol_tri(y,itri,efield)
     err = b_interpol_analytic(y,bfield,jacb)
     err = eom_eval(y   ,bfield,jacb,efield,dt,dy ,prt%mu,prt%charge,prt%mass)
@@ -57,6 +65,9 @@ contains
 #ifdef DEBUG
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
+#endif
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(ytmp,itri)
 #endif
     err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
@@ -72,6 +83,9 @@ contains
     if(err .eq. 1) stop
 #endif
 
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(ytmp,itri)
+#endif
     err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dym,prt%mu,prt%charge,prt%mass)
@@ -91,6 +105,9 @@ contains
        end do
     end do
 
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(ytmp,itri)
+#endif
     err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)

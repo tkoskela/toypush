@@ -1,4 +1,4 @@
-FFLAGS = -g -O3
+FFLAGS = -g -O3 -traceback
 
 ifeq ($(NERSC_HOST),edison)
 	FC = ftn

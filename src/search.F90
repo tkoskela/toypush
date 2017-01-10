@@ -41,11 +41,11 @@ contains
     
   end function search_tr
 
-  function search_tr_vec(xy,id) result(err)
+  function search_tr_vec(y,id) result(err)
 
     use grid_module, only : grid_mapping, grid_ntri
 
-    double precision, dimension(2,veclen) :: xy
+    double precision, dimension(veclen,4) :: y
     integer, dimension(veclen) :: id
 
     integer :: itri, iv
@@ -55,23 +55,24 @@ contains
     integer :: err
     
     err = 0
+    id = -999
     
-    do iv = 1,veclen
-       do itri = 1,grid_ntri
+    vecloop: do iv = 1,veclen
+       triangleloop: do itri = 1,grid_ntri
           
-          dx(1) = xy(1,iv) - grid_mapping(1,3,itri)
-          dx(2) = xy(2,iv) - grid_mapping(2,3,itri)
+          dx(1) = y(iv,1) - grid_mapping(1,3,itri)
+          dx(2) = y(iv,3) - grid_mapping(2,3,itri)
           bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
-          bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
-          
+          bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)         
+
           if(minval(bc_coords) .ge. -eps) then
              id(iv) = itri
-             return
+             cycle vecloop
           end if
           
-       end do
-    end do
-    
+       end do triangleloop
+    end do vecloop
+
     return
        
   end function search_tr_vec
