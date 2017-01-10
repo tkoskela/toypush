@@ -17,6 +17,7 @@ OBJS_AOS = params.o grid.o search.o particle_aos.o particleIO_aos.o equationOfMo
 
 DFLAGS += -DVERBOSE
 DFLAGS += -DMPI
+DFLAGS += -DMULTIPLEELEMENTS
 #DFLAGS += -DDEBUG
 #DFLAGS += -DOPENMP
 #DFLAGS += -DNODIV
