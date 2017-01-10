@@ -32,6 +32,12 @@ contains
 
     integer :: iv,iy
 
+    integer, dimension(veclen) :: itri
+
+#ifndef MULTIPLEELEMENTS
+    itri = 1
+#endif
+    
     hdt = dt * 0.5D0
 
     err = particle_getPhase(prt,y,veclen,iblock)
@@ -42,7 +48,7 @@ contains
 #endif
     
     ! get derivs with existing E-field
-    err = e_interpol_tri(y,efield)
+    err = e_interpol_tri(y,itri,efield)
     err = b_interpol_analytic(y,bfield,jacb)
     err = eom_eval(y   ,bfield,jacb,efield,dt,dy ,prt%mu,prt%charge,prt%mass)
 
@@ -55,7 +61,7 @@ contains
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
 #endif
-    err = e_interpol_tri(ytmp,efield)
+    err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
 
@@ -69,7 +75,7 @@ contains
     if(err .eq. 1) stop
 #endif
 
-    err = e_interpol_tri(ytmp,efield)
+    err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dym,prt%mu,prt%charge,prt%mass)
     
@@ -88,7 +94,7 @@ contains
        end do
     end do
 
-    err = e_interpol_tri(ytmp,efield)
+    err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
     

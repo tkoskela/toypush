@@ -34,32 +34,37 @@ contains
     
   end function e_interpol_0
 
-  function e_interpol_tri(y,evec) result(err)
+  !> Interpolation function for 3-component vector (electric) field from unstructured mesh.
+  !<
+  function e_interpol_tri(y,itri,evec) result(err)
 
     use grid_module
 
     double precision, intent(in),  dimension(veclen,4) :: y    !> R,phi,z,rho_parallel
+    integer, intent(in), dimension(veclen) :: itri             !> Grid element index
     double precision, intent(out), dimension(veclen,3) :: evec !> Er,Ephi,Ez          
     integer :: err
 
-    integer :: iv
-    double precision, dimension(3) :: bc_coords
-    double precision, dimension(2) :: dx
-    integer :: itri, inode, icomp
+    integer :: iv !> Index for vector loop
+    double precision, dimension(3) :: bc_coords !> Weight factor for each node
+    double precision, dimension(2) :: dx 
+    integer, dimension(3) :: nodes !> Node indices for element itri
+    integer :: inode, icomp
 
-    itri = 1
     err = 0
     evec = 0D0
     do iv = 1,veclen
 
-       dx(1) = y(iv,1) - grid_mapping(1,3,itri)
-       dx(2) = y(iv,3) - grid_mapping(2,3,itri)
-       bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
+       dx(1) = y(iv,1) - grid_mapping(1,3,itri(iv))
+       dx(2) = y(iv,3) - grid_mapping(2,3,itri(iv))
+       bc_coords(1:2) = grid_mapping(1:2,1,itri(iv)) * dx(1) + grid_mapping(1:2,2,itri(iv)) * dx(2)
        bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
 
+       nodes = grid_tri(:,itri(iv))
+       
        do inode = 1,3
           do icomp = 1,3
-             evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,inode) * bc_coords(inode)
+             evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,nodes(inode)) * bc_coords(inode)
           end do
        end do
 

@@ -34,20 +34,20 @@ contains
     
   end function e_interpol_0
 
-  function e_interpol_tri(y,evec) result(err)
+  function e_interpol_tri(y,itri,evec) result(err)
 
     use grid_module
-
+    
     double precision, intent(in),  dimension(4,veclen) :: y    !> R,phi,z,rho_parallel
-    double precision, intent(out), dimension(3,veclen) :: evec !> Er,Ephi,Ez          
+    integer, intent(in), dimension(veclen) :: itri
+    double precision, intent(out), dimension(3,veclen) :: evec !> Er,Ephi,Ez
     integer :: err
 
     integer :: iv
     double precision, dimension(3) :: bc_coords
     double precision, dimension(2) :: dx
-    integer :: itri, inode, icomp
+    integer :: inode, icomp
 
-    itri = 1
     err = 0
     evec = 0D0
     do iv = 1,veclen
@@ -56,7 +56,7 @@ contains
        dx(2) = y(3,iv) - grid_mapping(2,3,itri)
        bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
        bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
-
+            
        do inode = 1,3
           do icomp = 1,3
              evec(icomp,iv) = evec(icomp,iv) + grid_efield(icomp,inode) * bc_coords(inode)

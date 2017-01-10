@@ -49,12 +49,15 @@ program toypush
   if(my_id .eq. 0) write(*,*) 'veclen = ',veclen
   if(my_id .eq. 0) write(*,*)
   
-  if(my_id .eq. 0) write(*,*) 'initializing',nprt,'particles'  
+  if(my_id .eq. 0) write(*,*) 'initializing particles with ',params_nprt,'particles.'
+  if(my_id .eq. 0) write(*,*) 'initializing grid      with ',params_nnode,'nodes.'
+  if(my_id .eq. 0) write(*,*) 'initializing grid      with ',params_ntri,'triangles.'
   err = init(prt)
+  if(err .ne. 0) stop
   if(my_id .eq. 0) write(*,*) 'done initialising'
   if(my_id .eq. 0) write(*,*)
   
-  nblock = nprt / veclen  
+  nblock = params_nprt / veclen  
   if(my_id .eq. 0) write(*,*) 'pushing particles in ',nblock,' blocks'
   
   !pid = 88

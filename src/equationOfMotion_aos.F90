@@ -54,9 +54,13 @@ contains
 
        ! Norms
        B2 = dot_product(bvec(iv,:),bvec(iv,:))
-#ifdef EXPERIMENT
+#ifdef NOSQRT
+       B  = B2
+#else
        B  = sqrt(B2)
+#endif
        
+#ifdef NODIV       
        c_m = charge(iv) * mass(iv)
        cmrho = c_m * y(iv,4)
        cmrho2 = cmrho * y(iv,4)
@@ -69,8 +73,6 @@ contains
             + (jacb(iv,3,1) - jacb(iv,1,3)) * bvec(iv,2) &
             - (bvec(iv,2) * over_r + jacb(iv,2,1)) * bvec(iv,3) )))
 #else
-       B  = sqrt(B2)
-       
        c_m = charge(iv) * mass(iv)
        cmrho = c_m * y(iv,4)
        cmrho2 = cmrho * y(iv,4)

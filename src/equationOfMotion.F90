@@ -11,7 +11,7 @@ module eom
 
 contains
 
-#ifndef EXPERIMENT
+#ifndef NODIVSQRT
   !> Evaluates the LHS of the equations of motion. See equation (1) in Chang et al, PoP, 2009
   !<
   function eom_eval(y,Bvec,jacB,Evec,dt,yprime,mu,charge,mass) result(err)

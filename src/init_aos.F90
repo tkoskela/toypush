@@ -14,7 +14,7 @@ contains
     use rk4, only: rk4_init
     use particle, only : particle_data, particle_init, particle_updatephase
     use particleIO, only: particleio_write
-    use grid_module, only : get_coords, get_nodes, grid_init_coords, grid_init_efield
+    use grid_module, only : get_coords, get_nodes, grid_init, grid_init_coords, grid_init_efield
 
     implicit none
 
@@ -22,17 +22,18 @@ contains
     integer :: i,ir,ith,nr,nth
     integer :: err
 
-    double precision, dimension(nprt,4) :: y
+    double precision, dimension(params_nprt,4) :: y
 
-    double precision, dimension(2,3) :: coords
-    double precision, dimension(3,3) :: efield
+    double precision, dimension(2,params_nnode) :: coords
+    integer, dimension(3,params_ntri) :: tri
+    double precision, dimension(3,params_nnode) :: efield
 
     double precision :: v
     
     nth = 32
-    nr = nprt / nth
+    nr = params_nprt / nth
     
-    err = particle_init(prt,nprt)
+    err = particle_init(prt,params_nprt)
 
     v = 1D4
     
@@ -47,7 +48,7 @@ contains
        end do
     end do
 
-    err = particle_updatePhase(prt,y,nprt,1)
+    err = particle_updatePhase(prt,y,params_nprt,1)
 
     prt%mass = 2.0D0 * protonmass
     prt%charge = unitcharge
@@ -55,11 +56,25 @@ contains
     
     err = rk4_init()
 
+    err = grid_init(params_nnode,params_ntri)
+    
     coords(:,1) = [rmin,       zmin      ]
     coords(:,2) = [2D0 * rmax, zmin      ]
     coords(:,3) = [rmin,       2D0 * zmax]
+
+    tri(:,1) = [1,2,3]
+
+#ifdef MULTIPLEELEMENTS
+    coords(:,1) = [rmin, zmin]
+    coords(:,2) = [rmax, zmin]
+    coords(:,3) = [rmin, zmax]
+    coords(:,4) = [rmax, zmax]
+    tri(:,2) = [4,2,3]
+    efield(:,4) = [5D-1, 0D0, 0D0] ! node 3
+#endif
+
     
-    err = grid_init_coords(coords)
+    err = grid_init_coords(coords,tri)
 
     !              ER   Ep   Ez
     efield(:,1) = [ 0D0, 0D0, 0D0] ! node 1
