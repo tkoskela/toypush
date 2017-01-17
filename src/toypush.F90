@@ -25,9 +25,9 @@ program toypush
   
   integer :: pid
 
-  integer :: num_procs, my_id
+  integer :: num_procs, my_id, ith
 
-  real :: t1,t2
+  double precision :: t1,t2
 
   my_id = 0
 
@@ -63,7 +63,11 @@ program toypush
   !pid = 88
   !open(unit=15,file='orbit.dat',action='write')
 
+#ifdef OPENMP
+  t1 = omp_get_wtime()
+#else
   call cpu_time(t1)
+#endif
 
   !$omp parallel do private(iblock, it)
   do iblock = 1,nblock
@@ -77,8 +81,9 @@ program toypush
            
 #ifdef VERBOSE
            !$omp critical
-           if (mod(it,nt/4) .eq. 0) then
-              if(my_id .eq. 0) write(*,*) 'completed time step ',it,' out of ',nt,' in block ',iblock
+           if (mod(it,nt) .eq. 0) then
+              ith = omp_get_thread_num()
+              if(my_id .eq. 0) write(*,*) 'Thread ',ith,' completed block ',iblock
            end if
            !$omp end critical
 #endif
@@ -89,7 +94,11 @@ program toypush
   end do
   !close(15)
 
+#ifdef OPENMP
+  t2 = omp_get_wtime()
+#else
   call cpu_time(t2)
+#endif
 
   if(my_id .eq. 0) write(*,*) 'done pushing'
   if(my_id .eq. 0) write(*,*) 'spent ',t2-t1,'s'
