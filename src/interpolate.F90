@@ -52,9 +52,9 @@ contains
     evec = 0D0
     do iv = 1,veclen
 
-       dx(1) = y(1,iv) - grid_mapping(1,3,itri)
-       dx(2) = y(3,iv) - grid_mapping(2,3,itri)
-       bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
+       dx(1) = y(1,iv) - grid_mapping(1,3,itri(iv))
+       dx(2) = y(3,iv) - grid_mapping(2,3,itri(iv))
+       bc_coords(1:2) = grid_mapping(1:2,1,itri(iv)) * dx(1) + grid_mapping(1:2,2,itri(iv)) * dx(2)
        bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
             
        do inode = 1,3
