@@ -6,6 +6,12 @@ module interpolate
   
   implicit none
 
+  integer, save :: num_vector
+  integer, save :: num_gather
+
+  integer, save :: num_one
+  integer, save :: num_two
+
 contains
 
   function init_interpol() result(err)
@@ -54,14 +60,18 @@ contains
     integer :: itri_scalar
 
     err = 0
-    evec = 0D0
     if(all(itri .eq. itri(1))) then
+       num_vector = num_vector + 1
+       if(itri(1) .eq. 1)   num_one = num_one + 1
+       if(itri(1) .eq. 2)   num_two = num_two + 1
        itri_scalar = itri(1)
        !dir$ simd
        !!dir$ nounroll
        !dir$ vector aligned
        do iv = 1,veclen
           
+          evec(iv,:) = 0D0
+
           dx(1) = y(iv,1) - grid_mapping(1,3,itri_scalar)
           dx(2) = y(iv,3) - grid_mapping(2,3,itri_scalar)
           bc_coords(1:2) = grid_mapping(1:2,1,itri_scalar) * dx(1) + grid_mapping(1:2,2,itri_scalar) * dx(2)
@@ -71,14 +81,15 @@ contains
              do icomp = 1,3
                 evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,grid_tri(inode,itri_scalar)) * bc_coords(inode)
              end do
-          end do
-          
-          !write(313,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
+          end do          
           
        end do
     else
+       num_gather = num_gather + 1
        do iv = 1,veclen
           
+          evec(iv,:) = 0D0
+
           dx(1) = y(iv,1) - grid_mapping(1,3,itri(iv))
           dx(2) = y(iv,3) - grid_mapping(2,3,itri(iv))
           bc_coords(1:2) = grid_mapping(1:2,1,itri(iv)) * dx(1) + grid_mapping(1:2,2,itri(iv)) * dx(2)
@@ -90,9 +101,7 @@ contains
              do icomp = 1,3
                 evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,nodes(inode)) * bc_coords(inode)
              end do
-          end do
-          
-          !write(313,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
+          end do         
           
        end do
     end if
