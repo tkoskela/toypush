@@ -23,8 +23,8 @@ module params
   double precision, parameter :: rmax = 3D0
   double precision, parameter :: zmin = -1D0
   double precision, parameter :: zmax = 1D0 
-  integer, parameter :: veclen = 2**9
-  integer, parameter :: params_nprt = 2**15
+  integer, parameter :: veclen = 2**6
+  integer, parameter :: params_nprt = 2**20
   integer, parameter :: nt = 1000
 #ifdef MULTIPLEELEMENTS
   integer, parameter :: params_nnode = 4
