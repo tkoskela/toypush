@@ -46,9 +46,9 @@ contains
     integer :: err
 
     integer :: iv !> Index for vector loop
-    double precision, dimension(3) :: bc_coords !> Weight factor for each node
+    double precision, dimension(veclen,3) :: bc_coords !> Weight factor for each node
     double precision, dimension(2) :: dx 
-    integer, dimension(3) :: nodes !> Node indices for element itri
+    integer, dimension(veclen,3) :: nodes !> Node indices for element itri
     integer :: inode, icomp
 
     err = 0
@@ -57,20 +57,24 @@ contains
 
        dx(1) = y(iv,1) - grid_mapping(1,3,itri(iv))
        dx(2) = y(iv,3) - grid_mapping(2,3,itri(iv))
-       bc_coords(1:2) = grid_mapping(1:2,1,itri(iv)) * dx(1) + grid_mapping(1:2,2,itri(iv)) * dx(2)
-       bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
+       bc_coords(iv,1) = grid_mapping(1,1,itri(iv)) * dx(1) + grid_mapping(1,2,itri(iv)) * dx(2)
+       bc_coords(iv,2) = grid_mapping(2,1,itri(iv)) * dx(1) + grid_mapping(2,2,itri(iv)) * dx(2)
+       bc_coords(iv,3) = 1.0D0 - bc_coords(iv,1) - bc_coords(iv,2)
 
-       nodes = grid_tri(:,itri(iv))
+       !nodes(iv,:) = grid_tri(:,itri(iv))
+
+    end do
        
-       do inode = 1,3
-          do icomp = 1,3
-             evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,nodes(inode)) * bc_coords(inode)
+    do inode = 1,3
+       do icomp = 1,3
+          do iv = 1,veclen
+             !evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,nodes(iv,inode)) * bc_coords(iv,inode)
+             evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,grid_tri(inode,itri(iv))) * bc_coords(iv,inode)
           end do
        end do
-
-       !write(313,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
-       
     end do
+
+    !write(313,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))      
     
   end function e_interpol_tri
 
