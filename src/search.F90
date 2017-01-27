@@ -54,24 +54,33 @@ contains
 
     integer :: err
     
-    err = 0
-    id = -999
-    
-    vecloop: do iv = 1,veclen
-       triangleloop: do itri = 1,grid_ntri
-          
-          dx(1) = y(iv,1) - grid_mapping(1,3,itri)
-          dx(2) = y(iv,3) - grid_mapping(2,3,itri)
-          bc_coords(1:2) = grid_mapping(1:2,1,itri) * dx(1) + grid_mapping(1:2,2,itri) * dx(2)
-          bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)         
+    logical, dimension(veclen) :: continue_search
 
-          if(minval(bc_coords) .ge. -eps) then
-             id(iv) = itri
-             cycle vecloop
-          end if
+    err = 0
+    continue_search = .true.
+    id = -999
+
+    do itri = 1,grid_ntri
+       !$omp simd private(bc_coords)
+       !dir$ vector aligned
+       do iv = 1,veclen
           
-       end do triangleloop
-    end do vecloop
+          if(continue_search(iv)) then
+
+             dx(1) = y(iv,1) - grid_mapping(1,3,itri)
+             dx(2) = y(iv,3) - grid_mapping(2,3,itri)
+             bc_coords(1) = grid_mapping(1,1,itri) * dx(1) + grid_mapping(1,2,itri) * dx(2)
+             bc_coords(2) = grid_mapping(2,1,itri) * dx(1) + grid_mapping(2,2,itri) * dx(2)
+             bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)         
+             
+             if(all(bc_coords .ge. -eps)) then
+                id(iv) = itri
+                continue_search(iv) = .false.
+             end if
+             
+          end if
+       end do
+    end do 
 
     return
        
