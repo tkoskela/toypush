@@ -13,7 +13,9 @@ contains
 
     use rk4, only: rk4_init
     use particle, only : particle_data, particle_init, particle_updatephase
+#ifdef USEIO
     use particleIO, only: particleio_write
+#endif
     use grid_module, only : get_coords, get_nodes, grid_init, grid_init_coords, grid_init_efield
 
     implicit none
@@ -85,7 +87,9 @@ contains
     
     err = grid_init_efield(efield)
     
+#ifdef USEIO
     err = particleio_write(prt,'inistate.dat')
+#endif
     
   end function init
 end module initmodule

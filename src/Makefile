@@ -1,4 +1,4 @@
-FFLAGS = -g -O3 -traceback
+FFLAGS = -g -O3 -traceback -qopenmp
 
 ifeq ($(NERSC_HOST),edison)
 	FC = ftn
@@ -16,12 +16,13 @@ OBJS = params.o grid.o search.o particle.o particleIO.o equationOfMotion.o inter
 OBJS_AOS = params.o grid.o search.o particle_aos.o particleIO_aos.o equationOfMotion_aos.o interpolate_aos.o rungekutta_aos.o init_aos.o 
 
 DFLAGS += -DVERBOSE
-DFLAGS += -DMPI
+#DFLAGS += -DMPI
 #DFLAGS += -DMULTIPLEELEMENTS
 #DFLAGS += -DDEBUG
-#DFLAGS += -DOPENMP
+DFLAGS += -DOPENMP
 #DFLAGS += -DNODIV
 #DFLAGS += -DNOSQRT
+#DFLAGS += -DUSEIO
 
 toypush : $(OBJS_AOS) toypush.o
 	$(FC) $(FFLAGS) $(DFLAGS) -o $@ $^
