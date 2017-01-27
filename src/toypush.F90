@@ -122,14 +122,18 @@ contains
 
     use rk4, only: rk4_deallocate
     use particle, only : particle_data, particle_deallocate
+#ifdef USEIO
     use particleio, only : particleio_write
+#endif
     
     implicit none
 
     type(particle_data) :: prt
     integer :: err
 
+#ifdef USEIO
     err = particleio_write(prt, 'endstate.dat')
+#endif
     
     err = particle_deallocate(prt)
     err = rk4_deallocate()
