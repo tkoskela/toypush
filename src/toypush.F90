@@ -31,18 +31,20 @@ program toypush
 
   my_id = 0
 
-#ifdef OPENMP
-  !$omp parallel
-  !$omp master
-  write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
-  !$omp end master
-  !$omp end parallel
-#endif
-
 #ifdef MPI
   call mpi_init(err)
   call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, err)
   call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, err)
+#endif
+
+#ifdef OPENMP
+  !$omp parallel
+  !$omp master
+  if(my_id .eq. 0) then
+     write(*,*) 'number of OpenMP threads = ',omp_get_num_threads()
+  end if
+  !$omp end master
+  !$omp end parallel
 #endif
 
   if(my_id .eq. 0) write(*,*) 'program toypush started'
