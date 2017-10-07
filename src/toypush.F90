@@ -30,6 +30,7 @@ program toypush
   double precision :: t1,t2
 
   my_id = 0
+  num_procs = 1
 
 #ifdef OPENMP
   !$omp parallel
@@ -44,6 +45,8 @@ program toypush
   call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, err)
   call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, err)
 #endif
+
+  params_nprt = params_nprtPerPrank * num_procs
 
   if(my_id .eq. 0) write(*,*) 'program toypush started'
   if(my_id .eq. 0) write(*,*) 'veclen = ',veclen

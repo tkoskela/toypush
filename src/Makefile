@@ -15,10 +15,10 @@ endif
 OBJS = params.o grid.o search.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
 DFLAGS += -DVERBOSE
-#DFLAGS += -DMPI
-#DFLAGS += -DMULTIPLEELEMENTS
+DFLAGS += -DMPI
+DFLAGS += -DMULTIPLEELEMENTS
 #DFLAGS += -DDEBUG
-DFLAGS += -DOPENMP
+#DFLAGS += -DOPENMP
 #DFLAGS += -DNODIV
 #DFLAGS += -DNOSQRT
 #DFLAGS += -DUSEIO
