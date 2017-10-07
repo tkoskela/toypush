@@ -6,6 +6,12 @@ module interpolate
   
   implicit none
 
+  integer, save :: num_vector
+  integer, save :: num_gather
+
+  integer, save :: num_one
+  integer, save :: num_two
+
 contains
 
   function init_interpol() result(err)
@@ -34,38 +40,113 @@ contains
     
   end function e_interpol_0
 
+  !> Interpolation function for 3-component vector (electric) field from unstructured mesh.
+  !<
   function e_interpol_tri(y,itri,evec) result(err)
 
     use grid_module
-    
-    double precision, intent(in),  dimension(4,veclen) :: y    !> R,phi,z,rho_parallel
-    integer, intent(in), dimension(veclen) :: itri
-    double precision, intent(out), dimension(3,veclen) :: evec !> Er,Ephi,Ez
+
+    double precision, intent(in),  dimension(veclen,4) :: y    !> R,phi,z,rho_parallel
+    integer, intent(in), dimension(veclen) :: itri             !> Grid element index
+    double precision, intent(out), dimension(veclen,3) :: evec !> Er,Ephi,Ez          
     integer :: err
 
-    integer :: iv
-    double precision, dimension(3) :: bc_coords
-    double precision, dimension(2) :: dx
+    integer :: iv !> Index for vector loop
+    double precision, dimension(3) :: bc_coords !> Weight factor for each node
+    double precision, dimension(2) :: dx 
+    integer, dimension(3) :: nodes !> Node indices for element itri
     integer :: inode, icomp
 
+    integer :: itri_scalar
+
+    integer, dimension(veclen) :: istart, iend
+    integer :: num_vec_chunks,i_vec_chunks
+
     err = 0
-    evec = 0D0
-    do iv = 1,veclen
 
-       dx(1) = y(1,iv) - grid_mapping(1,3,itri(iv))
-       dx(2) = y(3,iv) - grid_mapping(2,3,itri(iv))
-       bc_coords(1:2) = grid_mapping(1:2,1,itri(iv)) * dx(1) + grid_mapping(1:2,2,itri(iv)) * dx(2)
-       bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
-            
-       do inode = 1,3
-          do icomp = 1,3
-             evec(icomp,iv) = evec(icomp,iv) + grid_efield(icomp,inode) * bc_coords(inode)
-          end do
-       end do
-
-       !write(313,*) sngl(y(1,iv)),sngl(y(3,iv)),sngl(evec(:,iv))
-       
+    ! Loop through itri, find indices where the value of itri changes and store those in istart,iend.
+    ! Count the number of changes in num_vec_chunks.
+    num_vec_chunks = 1
+    istart(1) = 1
+    do iv = 1, veclen - 1
+       if(itri(iv) .ne. itri(iv+1)) then
+          iend(num_vec_chunks) = iv
+          istart(num_vec_chunks + 1) = iv + 1
+          num_vec_chunks = num_vec_chunks + 1
+       end if
     end do
+    iend(num_vec_chunks) = veclen
+
+    ! Loop through the vec_chunks, store a scalar value itri_scalar for each vec_chunk (since we know the value
+    ! does not change within a vec_chunk). Then loop through the elements in the vec_chunk (istart to iend) and 
+    ! do the interpolation using itri_scalar.
+    do i_vec_chunks = 1,num_vec_chunks
+       itri_scalar = itri(istart(i_vec_chunks))
+
+       !dir$ simd
+       !dir$ vector aligned
+       do iv = istart(i_vec_chunks),iend(i_vec_chunks)
+          evec(iv,:) = 0D0
+
+          dx(1) = y(iv,1) - grid_mapping(1,3,itri_scalar)
+          dx(2) = y(iv,3) - grid_mapping(2,3,itri_scalar)
+          bc_coords(1:2) = grid_mapping(1:2,1,itri_scalar) * dx(1) + grid_mapping(1:2,2,itri_scalar) * dx(2)
+          bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
+          
+          do inode = 1,3
+             do icomp = 1,3
+                evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,grid_tri(inode,itri_scalar)) * bc_coords(inode)
+             end do
+          end do          
+
+       end do
+    end do
+
+    ! if(all(itri .eq. itri(1))) then
+    !    itri_scalar = itri(1)
+    !    !dir$ simd
+    !    !!dir$ nounroll
+    !    !dir$ vector aligned
+    !    do iv = 1,veclen
+          
+    !       evec(iv,:) = 0D0
+
+    !       dx(1) = y(iv,1) - grid_mapping(1,3,itri_scalar)
+    !       dx(2) = y(iv,3) - grid_mapping(2,3,itri_scalar)
+    !       bc_coords(1:2) = grid_mapping(1:2,1,itri_scalar) * dx(1) + grid_mapping(1:2,2,itri_scalar) * dx(2)
+    !       bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
+          
+    !       do inode = 1,3
+    !          do icomp = 1,3
+    !             evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,grid_tri(inode,itri_scalar)) * bc_coords(inode)
+    !          end do
+    !       end do          
+          
+    !    end do
+    ! else
+    !    !num_gather = num_gather + 1
+    !    !dir$ simd
+    !    !!dir$ nounroll
+    !    !dir$ vector aligned
+    !    do iv = 1,veclen
+          
+    !       evec(iv,:) = 0D0
+
+    !       dx(1) = y(iv,1) - grid_mapping(1,3,itri(iv))
+    !       dx(2) = y(iv,3) - grid_mapping(2,3,itri(iv))
+    !       bc_coords(1:2) = grid_mapping(1:2,1,itri(iv)) * dx(1) + grid_mapping(1:2,2,itri(iv)) * dx(2)
+    !       bc_coords(3) = 1.0D0 - bc_coords(1) - bc_coords(2)
+          
+    !       nodes = grid_tri(:,itri(iv))
+          
+    !       do inode = 1,3
+    !          do icomp = 1,3
+    !             evec(iv,icomp) = evec(iv,icomp) + grid_efield(icomp,nodes(inode)) * bc_coords(inode)
+    !          end do
+    !       end do         
+          
+    !    end do
+    ! end if
     
   end function e_interpol_tri
 
@@ -87,8 +168,8 @@ contains
 
     err = 0
     do iv = 1,veclen
-       bvec(:,iv) = 0.0D0
-       jacb(:,:,iv) = 0.0D0
+       bvec(iv,:) = 0.0D0
+       jacb(iv,:,:) = 0.0D0
     end do
     
   end function b_interpol_0
@@ -104,14 +185,14 @@ contains
     double precision, parameter :: bz0 = 1D-2
     double precision, parameter :: bp0 = 1D0
     
-    double precision, intent(in),  dimension(4,veclen) :: y    !> R,phi,z,rho_parallel
-    double precision, intent(out), dimension(3,veclen) :: bvec !> Br,Bphi,Bz
+    double precision, intent(in),  dimension(veclen,4) :: y    !> R,phi,z,rho_parallel
+    double precision, intent(out), dimension(veclen,3) :: bvec !> Br,Bphi,Bz
     !> Magnetic field jacobian
     !> |  dBRdR,   dBRdphi,   dBRdz  |
     !> | dBphidR, dBphidphi, dBphidz |
     !> |  dBzdR,   dBzdphi,   dBzdz  |
     !<
-    double precision, intent(out), dimension(3,3,veclen) :: jacb !> Br,Bphi,Bz          
+    double precision, intent(out), dimension(veclen,3,3) :: jacb !> Br,Bphi,Bz          
     integer :: err
     integer :: iv
 
@@ -119,27 +200,27 @@ contains
     
     err = 0
     do iv = 1,veclen
-       r = y(1,iv) - 2D0
-       z = y(3,iv)
+       r = y(iv,1) - 2D0
+       z = y(iv,3)
        
-       over_r = 1.0D0 / y(1,iv)
-       over_r2 = over_r / y(1,iv)
+       over_r = 1.0D0 / y(iv,1)
+       over_r2 = over_r / y(iv,1)
        
-       bvec(1,iv) = br0 * 2D0 * (r ** 2 - 1D0) * z
-       bvec(2,iv) = bp0 * over_r
-       bvec(3,iv) = bz0 * 2D0 * (1D0 - z ** 2) * r
+       bvec(iv,1) = br0 * 2D0 * (r ** 2 - 1D0) * z
+       bvec(iv,2) = bp0 * over_r
+       bvec(iv,3) = bz0 * 2D0 * (1D0 - z ** 2) * r
 
-       jacb(1,1,iv) = br0 * 4D0 * r * z
-       jacb(1,2,iv) = 0D0
-       jacb(1,3,iv) = br0 * 2D0 * (r ** 2 - 1D0)
+       jacb(iv,1,1) = br0 * 4D0 * r * z
+       jacb(iv,1,2) = 0D0
+       jacb(iv,1,3) = br0 * 2D0 * (r ** 2 - 1D0)
 
-       jacb(2,1,iv) = -1D0 * bp0 * over_r2
-       jacb(2,2,iv) = 0D0
-       jacb(2,3,iv) = 0D0
+       jacb(iv,2,1) = -1D0 * bp0 * over_r2
+       jacb(iv,2,2) = 0D0
+       jacb(iv,2,3) = 0D0
 
-       jacb(3,1,iv) = bz0 * 2D0 * (1D0 - z ** 2)
-       jacb(3,2,iv) = 0D0
-       jacb(3,3,iv) = -bz0 * 4D0 * r * z
+       jacb(iv,3,1) = bz0 * 2D0 * (1D0 - z ** 2)
+       jacb(iv,3,2) = 0D0
+       jacb(iv,3,3) = -bz0 * 4D0 * r * z
     end do
 
   end function b_interpol_analytic
