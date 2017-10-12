@@ -48,7 +48,7 @@ program toypush
   call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, err)
 #endif
 
-  params_nprt = params_nprtPerPrank * num_procs
+  params_nprt = params_nprtPerRank * num_procs
 
   if(my_id .eq. 0) write(*,*) 'program toypush started'
   if(my_id .eq. 0) write(*,*) 'veclen = ',veclen

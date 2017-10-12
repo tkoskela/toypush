@@ -23,7 +23,7 @@ DFLAGS += -DMULTIPLEELEMENTS
 #DFLAGS += -DNOSQRT
 #DFLAGS += -DUSEIO
 
-toypush : $(OBJS_AOS) toypush.o
+toypush : $(OBJS) toypush.o
 	$(FC) $(FFLAGS) $(DFLAGS) -o $@ $^
 
 test_interpolate : $(OBJS) test_interpolate.o
