@@ -13,13 +13,12 @@ else
 endif
 
 OBJS = params.o grid.o search.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
-OBJS_AOS = params.o grid.o search.o particle_aos.o particleIO_aos.o equationOfMotion_aos.o interpolate_aos.o rungekutta_aos.o init_aos.o 
 
 DFLAGS += -DVERBOSE
-#DFLAGS += -DMPI
-#DFLAGS += -DMULTIPLEELEMENTS
+DFLAGS += -DMPI
+DFLAGS += -DMULTIPLEELEMENTS
 #DFLAGS += -DDEBUG
-DFLAGS += -DOPENMP
+#DFLAGS += -DOPENMP
 #DFLAGS += -DNODIV
 #DFLAGS += -DNOSQRT
 #DFLAGS += -DUSEIO

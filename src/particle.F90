@@ -30,7 +30,7 @@ contains
     integer, intent(in) :: veclen !> block size
     integer, intent(in) :: iblock !> block id  
     type(particle_data), intent(inout) :: prt
-    double precision, dimension(4,veclen), intent(in) :: newPhase
+    double precision, dimension(veclen,4), intent(in) :: newPhase
 
     integer :: err
     integer :: iv,iglob
@@ -39,8 +39,8 @@ contains
     
     do iv = 1,veclen
        iglob = (iblock - 1) * veclen + iv
-       prt%rpz(:,iglob)   = newPhase(1:3,iv)
-       prt%rho_par(iglob) = newPhase(4,iv)
+       prt%rpz(iglob,:)   = newPhase(iv,1:3)
+       prt%rho_par(iglob) = newPhase(iv,4)
     end do
     
   end function particle_updatePhase
@@ -52,7 +52,7 @@ contains
     integer, intent(in) :: veclen !> block size
     integer, intent(in) :: iblock !> block id  
     type(particle_data), intent(in) :: prt
-    double precision, dimension(4,veclen), intent(out) :: phase
+    double precision, dimension(veclen,4), intent(out) :: phase
 
     integer :: err
     integer :: iv, iglob
@@ -61,8 +61,8 @@ contains
     
     do iv = 1,veclen
        iglob = (iblock - 1) * veclen + iv
-       phase(1:3,iv) = prt%rpz(:,iglob)
-       phase(4,iv)   = prt%rho_par(iglob)
+       phase(iv,1:3) = prt%rpz(iglob,:)
+       phase(iv,4)   = prt%rho_par(iglob)
     end do
     
   end function particle_getPhase
@@ -78,7 +78,7 @@ contains
        return
     end if
 
-    allocate(prt%rpz(3,arraydim))
+    allocate(prt%rpz(arraydim,3))
     allocate(prt%mass(arraydim))
     allocate(prt%charge(arraydim))
     allocate(prt%mu(arraydim))

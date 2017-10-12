@@ -21,6 +21,8 @@ contains
     use eom, only : eom_eval
     use interpolate, only : b_interpol_analytic, e_interpol_tri
     use particle, only : particle_data, particle_getphase, particle_updatephase
+    use search_module, only : search_tr_vec
+    use grid_module, only : grid_ntri
     
     implicit none
 
@@ -31,16 +33,15 @@ contains
     integer :: err
 
     integer :: iv,iy
-
     integer, dimension(veclen) :: itri
+
+    hdt = dt * 0.5D0
+
+    err = particle_getPhase(prt,y,veclen,iblock)
 
 #ifndef MULTIPLEELEMENTS
     itri = 1
 #endif
-    
-    hdt = dt * 0.5D0
-
-    err = particle_getPhase(prt,y,veclen,iblock)
 
 #ifdef DEBUG
     err = check_bounds(y)
@@ -48,18 +49,25 @@ contains
 #endif
     
     ! get derivs with existing E-field
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(y,itri)
+#endif
+    if(any(itri .lt. 1) .or. any(itri.gt.grid_ntri)) stop
     err = e_interpol_tri(y,itri,efield)
     err = b_interpol_analytic(y,bfield,jacb)
     err = eom_eval(y   ,bfield,jacb,efield,dt,dy ,prt%mu,prt%charge,prt%mass)
 
     do iy = 1,4
        do iv = 1,veclen
-          ytmp(iy,iv) = y(iy,iv) + hdt * dy(iy,iv)
+          ytmp(iv,iy) = y(iv,iy) + hdt * dy(iv,iy)
        end do
     end do
 #ifdef DEBUG
     err = check_bounds(ytmp)
     if(err .eq. 1) stop
+#endif
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(ytmp,itri)
 #endif
     err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
@@ -67,7 +75,7 @@ contains
 
     do iy = 1,4
        do iv = 1,veclen
-          ytmp(iy,iv) = y(iy,iv) + hdt * dyt(iy,iv)
+          ytmp(iv,iy) = y(iv,iy) + hdt * dyt(iv,iy)
        end do
     end do
 #ifdef DEBUG
@@ -75,13 +83,16 @@ contains
     if(err .eq. 1) stop
 #endif
 
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(ytmp,itri)
+#endif
     err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dym,prt%mu,prt%charge,prt%mass)
     
     do iy = 1,4
        do iv = 1,veclen
-          ytmp(iy,iv) = y(iy,iv) + dt * dym(iy,iv)
+          ytmp(iv,iy) = y(iv,iy) + dt * dym(iv,iy)
        end do
     end do
 #ifdef DEBUG
@@ -90,10 +101,13 @@ contains
 #endif
     do iy = 1,4
        do iv = 1,veclen
-          dym(iy,iv) = dyt(iy,iv) + dym(iy,iv)
+          dym(iv,iy) = dyt(iv,iy) + dym(iv,iy)
        end do
     end do
 
+#ifdef MULTIPLEELEMENTS
+    err = search_tr_vec(ytmp,itri)
+#endif
     err = e_interpol_tri(ytmp,itri,efield)
     err = b_interpol_analytic(ytmp,bfield,jacb)
     err = eom_eval(ytmp,bfield,jacb,efield,dt,dyt,prt%mu,prt%charge,prt%mass)
@@ -101,7 +115,7 @@ contains
     ! Obtain new_phase
     do iy = 1,4
        do iv = 1,veclen
-          y2(iy,iv) = y(iy,iv) + dt / 6.0D0 * ( dy(iy,iv) + dyt(iy,iv) + 2.0D0*dym(iy,iv) )
+          y2(iv,iy) = y(iv,iy) + dt / 6.0D0 * ( dy(iv,iy) + dyt(iv,iy) + 2.0D0*dym(iv,iy) )
        end do
     end do
 #ifdef DEBUG
@@ -117,16 +131,16 @@ contains
 
     integer :: err
     
-    allocate(ytmp(4,veclen))
-    allocate(y(   4,veclen))
-    allocate(y2(  4,veclen))
-    allocate(dy(  4,veclen))
-    allocate(dyt( 4,veclen))
-    allocate(dym( 4,veclen))
+    allocate(ytmp(veclen,4))
+    allocate(y(   veclen,4))
+    allocate(y2(  veclen,4))
+    allocate(dy(  veclen,4))
+    allocate(dyt( veclen,4))
+    allocate(dym( veclen,4))
 
-    allocate(efield(3,veclen))
-    allocate(bfield(3,veclen))
-    allocate(jacb(3,3,veclen))
+    allocate(efield(veclen,3))
+    allocate(bfield(veclen,3))
+    allocate(jacb(veclen,3,3))
 
     err = 0
     
@@ -156,13 +170,13 @@ contains
     use params, only : rmin,rmax,zmin,zmax,veclen
 
     integer :: err
-    double precision, intent(in), dimension(4,veclen) :: y
+    double precision, intent(in), dimension(veclen,4) :: y
     
     integer :: iv
 
     do iv = 1,veclen
-       if(y(1,iv) .gt. rmax .or. y(1,iv) .lt. rmin &
-            .or. y(3,iv) .gt. zmax .or. y(3,iv) .lt. zmin) then
+       if(y(iv,1) .gt. rmax .or. y(iv,1) .lt. rmin &
+            .or. y(iv,3) .gt. zmax .or. y(iv,3) .lt. zmin) then
           err = 1
           write(*,*) 'particle ',iv,' is out of bounds!'
           return

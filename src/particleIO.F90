@@ -34,7 +34,7 @@ contains
     open(unit=chn,file=fn,action='write', iostat=err)
     
     do i = i1,i2
-       write(chn,'(5E16.8)') prt % rpz(:,i), prt % mu(i), prt % rho_par(i)
+       write(chn,'(5E16.8)') prt % rpz(i,:), prt % mu(i), prt % rho_par(i)
     end do
 
     close(chn)

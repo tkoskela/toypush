@@ -24,7 +24,7 @@ module params
   double precision, parameter :: zmin = -1D0
   double precision, parameter :: zmax = 1D0 
   integer, parameter :: veclen = 2**6
-  integer, parameter :: params_nprt = 2**20
+  integer, parameter :: params_nprtPerRank = 2**16
   integer, parameter :: nt = 1000
 #ifdef MULTIPLEELEMENTS
   integer, parameter :: params_nnode = 4
@@ -35,5 +35,6 @@ module params
 #endif
   double precision, parameter :: dt = 2.0D-8
 
+  integer, save :: params_nprt
   
 end module params
