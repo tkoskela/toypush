@@ -1,5 +1,5 @@
 # toypush
-Simple PIC particle push program. Initialises a group of 32 768 particles and pushes them for 1000 steps using a gyrokinetic EOM [Chang et al. PoP 16 056108 2009]. Magnetic field values are evaluated from an analytic function and electric field values are linearly interpolated from three grid points using barycentric coordinates.
+Simple PIC particle push program. Initialises a group of 32 768 particles per MPI rank and pushes them for 1000 steps using a gyrokinetic EOM [Chang et al. PoP 16 056108 2009]. Magnetic field values are evaluated from an analytic function and electric field values are linearly interpolated from three grid points using barycentric coordinates.
 
 # Build Instructions
 cd src
@@ -10,3 +10,8 @@ The Makefile detects the fortran mpi compiler on NERSC platforms Edison, Cori an
 
 # Run Instructions
 Run the executable toypush anywhere. No input files are needed. Run parameters are hard-coded in params.F90.
+
+examples:
+Cori KNL:
+
+srun -n 64 -c 4 --cpu_bind=cores ./toypush

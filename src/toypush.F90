@@ -54,7 +54,8 @@ program toypush
   if(my_id .eq. 0) write(*,*) 'veclen = ',veclen
   if(my_id .eq. 0) write(*,*)
   
-  if(my_id .eq. 0) write(*,*) 'initializing particles with ',params_nprt,'particles.'
+  if(my_id .eq. 0) write(*,*) 'initializing particles with ',params_nprtperrank,'particles per rank.'
+  if(my_id .eq. 0) write(*,*) 'initializing particles with ',params_nprt,'total particles.'
   if(my_id .eq. 0) write(*,*) 'initializing grid      with ',params_nnode,'nodes.'
   if(my_id .eq. 0) write(*,*) 'initializing grid      with ',params_ntri,'triangles.'
   err = init(prt)
@@ -71,7 +72,7 @@ program toypush
 #ifdef OPENMP
   t1 = omp_get_wtime()
 #else
-  call cpu_time(t1)
+  t1 = mpi_wtime()
 #endif
 
   !$omp parallel do private(iblock, it)
@@ -104,7 +105,7 @@ program toypush
 #ifdef OPENMP
   t2 = omp_get_wtime()
 #else
-  call cpu_time(t2)
+  t2 = mpi_wtime()
 #endif
 
   if(my_id .eq. 0) write(*,*) 'done pushing'

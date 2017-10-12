@@ -14,7 +14,7 @@ endif
 
 OBJS = params.o grid.o search.o particle.o particleIO.o equationOfMotion.o interpolate.o rungekutta.o init.o 
 
-DFLAGS += -DVERBOSE
+#DFLAGS += -DVERBOSE
 DFLAGS += -DMPI
 DFLAGS += -DMULTIPLEELEMENTS
 #DFLAGS += -DDEBUG
