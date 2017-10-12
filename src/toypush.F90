@@ -85,12 +85,14 @@ program toypush
            err = rk4_push(prt, iblock)
            
 #ifdef VERBOSE
+#ifdef OPENMP
            !$omp critical
            if (mod(it,nt) .eq. 0) then
               ith = omp_get_thread_num()
               if(my_id .eq. 0) write(*,*) 'Thread ',ith,' completed block ',iblock
            end if
            !$omp end critical
+#endif
 #endif
         end do
 #ifdef MPI
